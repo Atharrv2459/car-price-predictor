@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Car Price Predictor</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        #container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* Important for padding and width */
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9f7ef;
+            border: 1px solid #b7e4c7;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: bold;
+            color: #155724;
+            /* Hide initially */
+            display: none;
+        }
+         #error-message {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            text-align: center;
+            color: #721c24;
+             /* Hide initially */
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container">
+        <h1>Predict Used Car Price</h1>
+
+        <form id="prediction-form">
+            <div>
+                <label for="company">Company:</label>
+                <select id="company" name="company" required>
+                    <option value="" disabled selected>Select Company</option>
+                    <!-- Add options based on your dataset -->
+                    <option value="Maruti">Maruti</option>
+                    <option value="Hyundai">Hyundai</option>
+                    <option value="Mahindra">Mahindra</option>
+                    <option value="Ford">Ford</option>
+                    <option value="Honda">Honda</option>
+                    <option value="Tata">Tata</option>
+                    <option value="Toyota">Toyota</option>
+                    <option value="Chevrolet">Chevrolet</option>
+                    <option value="Renault">Renault</option>
+                    <option value="Volkswagen">Volkswagen</option>
+                    <option value="Skoda">Skoda</option>
+                    <option value="Nissan">Nissan</option>
+                    <option value="Audi">Audi</option>
+                    <option value="BMW">BMW</option>
+                    <option value="Mercedes">Mercedes Benz</option> <!-- Match company names in data -->
+                    <option value="Datsun">Datsun</option>
+                    <option value="Mini">Mini</option>
+                    <option value="Fiat">Fiat</option>
+                    <option value="Mitsubishi">Mitsubishi</option>
+                    <option value="Jaguar">Jaguar</option>
+                    <option value="Jeep">Jeep</option>
+                    <option value="Land">Land Rover</option> <!-- Match company names in data -->
+                    <option value="Volvo">Volvo</option>
+                    <option value="Force">Force Motors</option> <!-- Match company names in data -->
+                    <option value="Hindustan">Hindustan Motors</option> <!-- Match company names in data -->
+                    <!-- Add others as needed -->
+                </select>
+            </div>
+
+            <div>
+                <label for="year">Year of Purchase:</label>
+                <input type="number" id="year" name="year" required placeholder="e.g., 2015" min="1990" max="2024">
+            </div>
+
+            <div>
+                <label for="kms_driven">Kilometers Driven:</label>
+                <input type="number" id="kms_driven" name="kms_driven" required placeholder="e.g., 45000" min="1">
+            </div>
+
+            <div>
+                <label for="fuel_type">Fuel Type:</label>
+                <select id="fuel_type" name="fuel_type" required>
+                    <option value="" disabled selected>Select Fuel Type</option>
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                    <option value="LPG">LPG</option>
+                    <!-- Add others if present in your data -->
+                </select>
+            </div>
+
+            <div>
+                <button type="submit">Predict Price</button>
+            </div>
+        </form>
+
+        <!-- Result Display Area -->
+        <div id="result"></div>
+        <div id="error-message"></div>
+
+    </div>
+
+    <script>
+        const form = document.getElementById('prediction-form');
+        const resultDiv = document.getElementById('result');
+        const errorDiv = document.getElementById('error-message');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Stop form from submitting the traditional way
+
+            // Clear previous results and errors
+            resultDiv.textContent = '';
+            resultDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            errorDiv.style.display = 'none';
+
+
+            // Get form data into an object
+            const formData = new FormData(form);
+            const data = {
+                company: formData.get('company'),
+                year: formData.get('year'),
+                kms_driven: formData.get('kms_driven'),
+                fuel_type: formData.get('fuel_type')
+            };
+
+            // Basic client-side check (optional, as 'required' handles empty)
+            if (!data.company || !data.year || !data.kms_driven || !data.fuel_type) {
+                errorDiv.textContent = 'Please fill in all fields.';
+                 errorDiv.style.display = 'block';
+                return;
+            }
+
+            console.log('Sending data:', data);
+
+            try {
+                // Send POST request to the Flask API
+                const response = await fetch('http://127.0.0.1:5000/predict', { // Make sure this URL is correct
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data) // Convert JS object to JSON
+                });
+
+                const result = await response.json(); // Parse the JSON response
+
+                if (response.ok) {
+                    // Display the prediction
+                     const formattedPrice = result.predicted_price.toLocaleString('en-IN', {
+                         maximumFractionDigits: 0,
+                         style: 'currency',
+                         currency: 'INR'
+                    });
+                    resultDiv.textContent = `Predicted Price: ${formattedPrice}`;
+                    resultDiv.style.display = 'block'; // Show result div
+                } else {
+                    // Display error from server
+                    console.error('Prediction error:', result.error);
+                    errorDiv.textContent = `Error: ${result.error || 'Failed to get prediction.'}`;
+                    errorDiv.style.display = 'block'; // Show error div
+                }
+
+            } catch (error) {
+                // Handle network or other fetch errors
+                console.error('Fetch error:', error);
+                errorDiv.textContent = 'Cannot connect to prediction service. Is it running?';
+                errorDiv.style.display = 'block'; // Show error div
+            }
+        });
+    </script>
+
+</body>
+</html>
